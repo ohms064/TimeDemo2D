@@ -22,9 +22,11 @@ namespace Assets.Scripts.Player_Scripts.Controllers {
         public float movementSpeed = 5.0f;
         public float jumpForce = 5.0f;
 
+        public bool FacingRight { get { return _controller.m_FacingRight; } }
+
         public Vector3 PlayerFront {
             get {
-                return _controller.m_FacingRight ? this.transform.right : -this.transform.right;
+                return FacingRight ? this.transform.right : -this.transform.right;
             }
         } //Lo defino así porque puede que la transformación nunca cambie sino que se cambie por animación.
 

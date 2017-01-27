@@ -10,6 +10,7 @@ namespace Assets.Scripts.Managers {
         public static PlayerAnimationController animator;
         public static PlayerLifeController life;
         public static Collider2D coll;
+        public static CameraController2D playerCamera;
 
         void Awake() {
             player = GameObject.FindGameObjectWithTag( "Player" );
@@ -19,6 +20,7 @@ namespace Assets.Scripts.Managers {
             animator = player.GetComponent<PlayerAnimationController>();
             life = player.GetComponent<PlayerLifeController>();
             coll = player.GetComponent<Collider2D>();
+            playerCamera = UnityEngine.Camera.main.GetComponent<CameraController2D>();
         }
     }
 }
