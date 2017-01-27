@@ -2,12 +2,12 @@
 
 namespace Assets.Scripts.Player_Scripts.Controllers {
     public class PlayerAnimationController : MonoBehaviour {
-        public Animator _playerAnimator;
+        private Animator _playerAnimator;
         private float _movimiento;
         private bool _isRunning;
         // Use this for initialization
         void Start() {
-            //_playerAnimator = this.GetComponent<Animator>();
+            _playerAnimator = this.GetComponent<Animator>();
         }
 
         public void StartRunning() {
