@@ -7,37 +7,46 @@ public class CameraController2D : MonoBehaviour {
 
 	public Transform target;
 	public Vector2 offset;
-	public float maxVelocity;
+	public float cameraSpeed;
 	public float distanceThreshold;
+	[Range(-20, -1)]
+	public float speedThresold;
 
 	private const float MIN_DISTANCE = 0.05f;
 	private CameraState _camState;
-	private float distance;
+	private float _distance;
+	private float _originalCameraSpeed;
+	private PlayerMovementController _playerMovement;
 
 	void Start() {
 		_camState = CameraState.RESTING;
 		transform.position = new Vector3(target.position.x, target.position.y, transform.position.z);
+		_originalCameraSpeed = cameraSpeed;
+		_playerMovement = PlayerManager.movement;
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		Vector2 targetPos = target.position;
 		Vector2 camPos = transform.position;
+		Vector2 playerVelocity = _playerMovement.playerRigidbody2D.velocity;
 
 		Vector2 realOffset = offset;
-		if ( !PlayerManager.movement.isFacingRight ) { realOffset.x = -realOffset.x; }
+		if ( !PlayerManager.movement.isFacingRight ) { realOffset.x *= -1; }
+		if ( playerVelocity.y < speedThresold ) { realOffset.y *= -2; }
 
-		distance = Vector2.Distance( targetPos + realOffset, camPos );
+		_distance = Vector2.Distance( targetPos + realOffset, camPos );
 		switch (_camState) {
 			case CameraState.FOLLOWING:
-				camPos = Vector2.Lerp( camPos, targetPos + realOffset, Time.deltaTime * maxVelocity );
+				camPos = Vector2.Lerp( camPos, targetPos + realOffset, Time.deltaTime * cameraSpeed );
 				transform.position = new Vector3( camPos.x, camPos.y, transform.position.z );
-				if ( distance < MIN_DISTANCE ) {
+				if ( _distance < MIN_DISTANCE ) {
 					_camState = CameraState.RESTING;
+					cameraSpeed = _originalCameraSpeed;
 				}
 				break;
 			case CameraState.RESTING:
-				if ( distance > distanceThreshold) {
+				if ( _distance > distanceThreshold) {
 					_camState = CameraState.FOLLOWING;
 				}
 				break;

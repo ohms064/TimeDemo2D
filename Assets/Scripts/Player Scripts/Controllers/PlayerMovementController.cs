@@ -6,9 +6,8 @@ using UnityStandardAssets._2D;
 
 [RequireComponent( typeof( Rigidbody2D ) )]
 public class PlayerMovementController : MonoBehaviour {
-    private Rigidbody2D _rigidbody;
+    public Rigidbody2D playerRigidbody2D;
     private Animator _animator;
-    private bool _isJumping;
     private bool _jumpButtonDown;
     private GroundedState _grounded;
     private const int JUMP_LAYER_MASK = 1280;
@@ -32,12 +31,12 @@ public class PlayerMovementController : MonoBehaviour {
 
     // Use this for initialization
     private void Start() {
-        _rigidbody = this.GetComponent<Rigidbody2D>();
+        playerRigidbody2D = this.GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
     }
 
     public void PushedTo( Vector3 direction ) {
-        _rigidbody.AddForce( direction, ForceMode2D.Impulse );
+        playerRigidbody2D.AddForce( direction, ForceMode2D.Impulse );
     }
 
     private void FixedUpdate() {
@@ -51,26 +50,27 @@ public class PlayerMovementController : MonoBehaviour {
                 if ( colls[i].transform.tag.Equals( "Ground" ) ) {
                     _grounded = GroundedState.GROUNDED;
                     _animator.SetBool( "Grounded", true );
-                    _animator.SetInteger( "SemiGrounded", 0 );
                     break;
                 }
                 else if ( colls[i].transform.tag.Equals( "Puzzle Cube" ) ) {
                     _grounded = GroundedState.SEMI_GROUNDED;
                     _animator.SetBool( "Grounded", true );
-                    _animator.SetInteger( "SemiGrounded", 1 );
-                    break;
                 }
             }
         }
-        _animator.SetFloat( "vSpeed", _rigidbody.velocity.y );
+        _animator.SetFloat( "vSpeed", playerRigidbody2D.velocity.y );
 
 
     }
 
-    public void Move( float movement, bool jump ) {
-        _animator.SetFloat( "Speed", Mathf.Abs( movement ) );
-        _rigidbody.velocity = new Vector2( movement * movementSpeed, _rigidbody.velocity.y );
+    public void Move( float movement, bool jump, bool crouch ) {
 
+        _animator.SetBool( "Crouching", crouch );
+
+        _animator.SetFloat( "Speed", Mathf.Abs( movement ) );
+        if ( !crouch ) {
+            playerRigidbody2D.velocity = new Vector2( movement*movementSpeed, playerRigidbody2D.velocity.y );
+        }
         if ( (movement > 0 && !isFacingRight) || (movement < 0 && isFacingRight) ) { Flip(); }
 
         _jumpButtonDown = jump;
@@ -84,20 +84,17 @@ public class PlayerMovementController : MonoBehaviour {
     }
 
     private IEnumerator JumpCoroutine( float force ) {
-        _rigidbody.velocity = Vector2.zero;
+        playerRigidbody2D.velocity = Vector2.zero;
         float timer = 0.0f;
-        print(string.Format("JumpStart Time: {0}", jumpTime));
         while ( _jumpButtonDown && timer < jumpTime ) {
             float jumpPercentage = timer / jumpTime;
-            Vector2 currentVelocity = _rigidbody.velocity;
+            Vector2 currentVelocity = playerRigidbody2D.velocity;
             currentVelocity.y = Mathf.SmoothStep( force, 0, jumpPercentage );
-            _rigidbody.velocity = currentVelocity;
+            playerRigidbody2D.velocity = currentVelocity;
             timer += Time.fixedDeltaTime;
-            print( string.Format( "%Jump {0} Timer: {1} Velocity: {2} Delta: {3}", jumpPercentage, timer, _rigidbody.velocity, Time.fixedDeltaTime ) );
             yield return new WaitForFixedUpdate();
         }
         print( "JumpEnd" );
-        _isJumping = false;
     }
 
     void Flip() {
