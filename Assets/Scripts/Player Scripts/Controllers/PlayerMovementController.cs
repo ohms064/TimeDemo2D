@@ -50,11 +50,13 @@ public class PlayerMovementController : MonoBehaviour {
                 if ( colls[i].transform.tag.Equals( "Ground" ) ) {
                     _grounded = GroundedState.GROUNDED;
                     _animator.SetBool( "Grounded", true );
+                    _animator.SetBool( "Balancing", false );
                     break;
                 }
                 else if ( colls[i].transform.tag.Equals( "Puzzle Cube" ) ) {
                     _grounded = GroundedState.SEMI_GROUNDED;
                     _animator.SetBool( "Grounded", true );
+                    _animator.SetBool("Balancing", true  );
                 }
             }
         }

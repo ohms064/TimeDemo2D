@@ -9,6 +9,7 @@ namespace Assets.Scripts.Player_Scripts.Controllers {
 		public float rotationSensitivity = 2.0f;
 		public float grabRange = 5.0f;
 		public float objectsDamage = 1.0f;
+	    private Transform grabPosition;
 
 		[HideInInspector]
 		public GrabStatus grabStatus;
@@ -21,6 +22,7 @@ namespace Assets.Scripts.Player_Scripts.Controllers {
 		// Use this for initialization
 		void Start () {
 			grabStatus = GrabStatus.HANDS_FREE;
+		    grabPosition = transform.Find( "GrabPosition" );
 		}
 	
 		// Update is called once per frame
@@ -69,8 +71,8 @@ namespace Assets.Scripts.Player_Scripts.Controllers {
 
 		void Grab() {
 			grabStatus = GrabStatus.GRABING_OBJECT;
-			grabedObject.position = this.transform.position + ( PlayerManager.movement.PlayerFront );
-			grabedObject.parent = this.transform;
+		    grabedObject.position = grabPosition.position;
+			grabedObject.parent = grabPosition;
 			grabedObject.up = Vector3.up;
 			grabedObject.GetComponent<Rigidbody2D>().isKinematic = true;
 		}
