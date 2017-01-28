@@ -12,6 +12,7 @@ public class PlayerMovementController : MonoBehaviour {
     private GroundedState _grounded;
     private const int JUMP_LAYER_MASK = 1280;
     private const float RADIUS_THRESHOLD = 0.2f;
+    private const float RAY_DISTANCE = 0.8f;
 
     public float runningThresold = 5.0f;
     public float runningMultiplier = 1.5f;
@@ -19,7 +20,7 @@ public class PlayerMovementController : MonoBehaviour {
     public float movementSpeed = 5.0f;
     public float jumpForce = 5.0f;
     [Range(0f, 1f)]
-    public float semiGroundedMultiplier = 0.75f;
+    public float semiGroundedMultiplier = 0.75f, pushMultiplier = 0.65f;
 
     public bool isFacingRight = true;
 
@@ -71,7 +72,26 @@ public class PlayerMovementController : MonoBehaviour {
 
         _animator.SetFloat( "Speed", Mathf.Abs( movement ) );
         if ( !crouch ) {
-            playerRigidbody2D.velocity = new Vector2( movement*movementSpeed, playerRigidbody2D.velocity.y );
+            Vector2 newVelocity = new Vector2( movement * movementSpeed, playerRigidbody2D.velocity.y );
+            RaycastHit2D hit2D = Physics2D.Raycast( transform.position + transform.up, isFacingRight ? transform.right : -transform.right,
+                RAY_DISTANCE, JUMP_LAYER_MASK );
+            if ( Mathf.Abs( movement ) > 0.2f ) {
+                if ( hit2D.collider != null ) {
+                    print( string.Format( "hit! Name {0} Tag {1} {2}", hit2D.transform.name, hit2D.transform.tag,
+                        Time.time ) );
+                    if ( hit2D.transform.tag.Equals( "Puzzle Cube" ) ) {
+                        playerRigidbody2D.velocity = newVelocity * pushMultiplier;
+                        _animator.SetBool( "Pushing", true );
+                    }
+                    else {
+                        //playerRigidbody2D.AddForce( Physics2D.gravity );
+                    }
+                }
+            }
+            else {
+                _animator.SetBool( "Pushing", false );
+            }
+            playerRigidbody2D.velocity = new Vector2( movement * movementSpeed, playerRigidbody2D.velocity.y );
         }
         if ( (movement > 0 && !isFacingRight) || (movement < 0 && isFacingRight) ) { Flip(); }
 
@@ -96,7 +116,6 @@ public class PlayerMovementController : MonoBehaviour {
             timer += Time.fixedDeltaTime;
             yield return new WaitForFixedUpdate();
         }
-        print( "JumpEnd" );
     }
 
     void Flip() {
@@ -125,7 +144,11 @@ public class PlayerMovementController : MonoBehaviour {
         Gizmos.DrawWireSphere( transform.position, RADIUS_THRESHOLD );
         Gizmos.color = Color.blue;
         Gizmos.DrawRay( this.transform.position, this.transform.right );
+        if ( Application.isPlaying ) {
 
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawRay( transform.position + transform.up, isFacingRight ? transform.right : -transform.right );
+        }
     }
 
 
